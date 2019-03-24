@@ -1,0 +1,59 @@
+#jinja2: lstrip_blocks: "True", trim_blocks: "True"
+version: '3.6'
+
+networks:
+  bridge:
+    external: true
+    name: bridge
+  {% for line in docker_networks.stdout_lines if docker_networks.stdout_lines %}
+  {{ line }}:
+    external: true
+    name: {{ line }}
+  {% endfor %}
+
+services:
+  datadog_agent: {% raw %}
+    {% endraw %}
+    image: {{ docker_registry }}/datadog-agent:${tag:-latest}
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 4
+        delay: 10s
+        failure_action: rollback
+        order: stop-first
+    environment:
+     - DD_API_KEY={{ datadog_apiKey }}
+     - DD_PROCESS_AGENT_ENABLED=true
+     - DD_APM_ENABLED=false
+     - DD_LOGS_ENABLED=false
+     - DD_LOG_LEVEL={{ datadog_agent_log_level }}
+     - DD_DOCKER_LABELS_AS_TAGS=true
+     - DD_COLLECT_EC2_TAGS=true
+     - DOCKER_DD_AGENT=yes
+     - NON_LOCAL_TRAFFIC=yes
+    volumes:
+     - type: bind
+       source: /var/run/docker.sock
+       target: /var/run/docker.sock
+       read_only: true
+     - type: bind
+       source: /proc/
+       target: /host/proc/
+       read_only: true
+     - type: bind
+       source: /sys/fs/cgroup/
+       target: /host/sys/fs/cgroup
+       read_only: true
+    networks:
+      - bridge
+      {% for line in docker_networks.stdout_lines if docker_networks.stdout_lines %}
+      - {{ line }}
+      {% endfor %}
+    labels:
+        - "com.example.service=Datadog"
+        - "com.example.description=Datadog Agent Container"

@@ -1,0 +1,52 @@
+---
+  - block:
+      - name: make tmp directory
+        file:
+          path: "{{ tmp_directory }}"
+          state: directory
+
+      - name: Copy static files
+        copy:
+          src: "files/{{ item }}"
+          dest: "{{ tmp_directory }}/{{ item }}"
+        with_items:
+          - "{{ build_files }}"
+
+      - name: Find check template files
+        find:
+          path: "{{ role_path }}/templates/"
+          pattern: ".*_check.yaml.j2"
+          use_regex: true
+        register: check_files
+
+      - name: Template checks
+        template:
+          src: "{{ item.path }}"
+          dest: "{{ tmp_directory }}/{{ item.path.split('/')[-1].split('.')[-3:-1] | join('.') }}"
+        with_items:
+          - "{{ check_files.files }}"
+
+      - name: Template Dockerfile
+        template:
+          src: "templates/Dockerfile.j2"
+          dest: "{{ tmp_directory }}/Dockerfile"
+
+      - name: Docker login via docker.login
+        include_role:
+          name: docker.login
+        vars:
+          amazon_ecr_login: false
+          run_once: true
+          docker_username: tilixpush
+
+      - name: "Build & Push {{ docker_registry }}/{{ docker_repo }}:{{ docker_tag }}"
+        docker_image:
+          state: present
+          path: "{{ tmp_directory }}"
+          name: "{{ docker_registry }}/{{ docker_repo }}"
+          tag: "{{ docker_tag }}"
+          push: yes
+          force: true
+
+    delegate_to: localhost
+    become: true

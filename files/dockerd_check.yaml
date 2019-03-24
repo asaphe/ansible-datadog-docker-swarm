@@ -1,0 +1,16 @@
+init_config:
+
+instances:
+  - new_tag_names: true
+    use_mount: yes
+    collect_events: true
+    filtered_event_types:
+       - 'top'
+       - 'exec_start'
+       - 'exec_create'
+       - 'exec_die'
+    collect_container_size: true
+    collect_images_stats: true
+    collect_image_size: true
+    collect_exit_codes: true
+    tags: ["env:{{ env }}","source:dockerd"]

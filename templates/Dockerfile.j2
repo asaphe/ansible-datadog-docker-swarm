@@ -1,0 +1,13 @@
+#jinja2: lstrip_blocks: "True", trim_blocks: "True"
+FROM datadog/agent:{{ imageVersion }}
+
+{% for file in check_files.files %}
+{% if 'tcp_check' in file.path %}
+COPY {{ file.path.split('/')[-1].split('.')[-3:-1] | join('.') }} /etc/datadog-agent/conf.d/{{ file.path.split('/')[-1].split('.')[-3:-1][0] }}.d/{{ file.path.split('/')[-1].split('.')[-3:-1] | join('.') }}
+RUN rm -f /etc/datadog-agent/conf.d/{{ file.path.split('/')[-1].split('.')[-3:-1][0] }}.d/conf.yaml.example
+{% else %}
+COPY {{ file.path.split('/')[-1].split('.')[-3:-1] | join('.') }} /etc/datadog-agent/conf.d/{{ file.path.split('/')[-1].split('.')[-3:-1][0].split('_')[0] }}.d/{{ file.path.split('/')[-1].split('.')[-3:-1] | join('.') }}
+RUN rm -f /etc/datadog-agent/conf.d/{{ file.path.split('/')[-1].split('.')[-3:-1][0].split('_')[0] }}.d/conf.yaml.example
+{% endif %}
+{% endfor %}
+RUN chown -R dd-agent. /etc/datadog-agent

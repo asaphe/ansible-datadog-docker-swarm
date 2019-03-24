@@ -1,0 +1,31 @@
+#jinja2: lstrip_blocks: "True", trim_blocks: "True"
+ad_identifiers:
+{% for nginx_host in nginx_hosts|map(attribute='name')|unique|list %}
+  - {{ nginx_host }}
+{% endfor %}
+{% for app_id in docker_swarm_example_applications|map(attribute='identifier')|unique|list %}
+  - {{ app_id }}
+{% endfor %}
+
+init_config:
+
+instances:
+{% for nginx_host in nginx_hosts|map(attribute='name')|unique|list %}
+  - name: {{ nginx_host }}_port_80
+    host: "%%hostname%%"
+    port: 80
+    collect_response_time: true
+    tags: ["env:{{ env }}","source:{{ nginx_host }}"]
+  - name: {{ nginx_host }}_port_443
+    host: "%%hostname%%"
+    port: 443
+    collect_response_time: true
+    tags: ["env:{{ env }}","source:{{ nginx_host }}"]
+{% endfor %}
+{% for tilix_app in docker_swarm_example_applications %}
+  - name: {{ tilix_app.name }}
+    host: "%%hostname%%"
+    port: {{ tilix_app.port }}
+    collect_response_time: true
+    tags: ["env:{{ env }}","app:{{ tilix_app.name }}"]
+{% endfor %}

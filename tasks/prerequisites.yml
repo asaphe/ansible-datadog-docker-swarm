@@ -1,0 +1,41 @@
+---
+  - block:
+      - name: Install pip prerequisites
+        pip:
+          name: "{{ pip_packages_prerequisites }}"
+          state: latest
+
+    become: true
+    tags: [datadog.dockerized.agent.prerequisites.pip]
+
+  - block:
+      - name: Install docker prerequisites
+        apt:
+          update_cache: yes
+          name: "{{ docker_apt_prerequisites }}"
+          state: latest
+
+      - name: Add Docker's apt key
+        apt_key:
+          url: https://download.docker.com/linux/ubuntu/gpg
+          state: present
+
+      - name: Add Docker's repository
+        apt_repository:
+          repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+          state: present
+
+      - name: Install Docker Engine
+        apt:
+          update_cache: yes
+          name: docker-ce
+          state: latest
+
+      - name: APT Cleanup
+        apt:
+          autoremove: yes
+          autoclean: yes
+
+    become: true
+    when: build_docker_container and 'localhost' in inventory_hostname
+    tags: [datadog.dockerized.agent.prerequisites.docker]

@@ -1,0 +1,8 @@
+init_config:
+
+instances:
+  - offset_threshold: 60
+    host: 127.0.0.1
+    port: 123
+    timeout: 5
+    tags: ["env:{{ env }}","source:ntp"]
