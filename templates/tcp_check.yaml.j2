@@ -22,10 +22,10 @@ instances:
     collect_response_time: true
     tags: ["env:{{ env }}","source:{{ nginx_host }}"]
 {% endfor %}
-{% for tilix_app in docker_swarm_example_applications %}
-  - name: {{ tilix_app.name }}
+{% for example_app in docker_swarm_example_applications %}
+  - name: {{ example_app.name }}
     host: "%%hostname%%"
-    port: {{ tilix_app.port }}
+    port: {{ example_app.port }}
     collect_response_time: true
-    tags: ["env:{{ env }}","app:{{ tilix_app.name }}"]
+    tags: ["env:{{ env }}","app:{{ example_app.name }}"]
 {% endfor %}

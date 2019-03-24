@@ -37,7 +37,7 @@
         vars:
           amazon_ecr_login: false
           run_once: true
-          docker_username: tilixpush
+          docker_username: examplepush
 
       - name: "Build & Push {{ docker_registry }}/{{ docker_repo }}:{{ docker_tag }}"
         docker_image:
