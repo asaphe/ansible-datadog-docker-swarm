@@ -1,0 +1,31 @@
+---
+  - block:
+      - name: "List networks on {{ ansible_hostname }}"
+        shell: "{% raw %}docker network ls --format '{{.Name}}' | grep -iE '^example_prod_.*'{% endraw %}"
+        register: docker_networks
+
+      - name: Template docker-stack file
+        template:
+          src: "templates/docker-compose.yml.j2"
+          dest: "{{ compose_file_dest_path }}/{{ compose_file_name }}"
+
+      - name: Docker login via docker.login
+        include_role:
+          name: docker.login
+        vars:
+          amazon_ecr_login: false
+          run_once: true
+
+      - name: "Pull {{ docker_registry }}/{{ docker_repo }}:{{ docker_tag }}"
+        docker_image:
+          name: "{{ docker_registry }}/{{ docker_repo }}"
+          tag: "{{ docker_tag }}"
+          pull: yes
+          force: true
+
+      - name: Deploy docker stack
+        shell: "docker stack deploy --prune --with-registry-auth --compose-file {{ compose_file_dest_path }}/{{ compose_file_name }} {{ stack_name }}"
+        args:
+          chdir: "{{ compose_file_dest_path }}"
+
+    become: true

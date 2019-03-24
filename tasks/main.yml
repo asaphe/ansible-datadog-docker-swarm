@@ -1,0 +1,11 @@
+---
+
+  - import_tasks: prerequisites.yml
+    tags: [datadog.dockerized.agent.prerequisites]
+
+  - import_tasks: build.yml
+    when: build_docker_container and 'localhost' in inventory_hostname
+    tags: [datadog.dockerized.agent.build]
+
+  - import_tasks: deploy.yml
+    tags: [datadog.dockerized.agent.deploy]

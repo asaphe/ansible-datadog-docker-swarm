@@ -1,0 +1,42 @@
+---
+datadog_apiKey: "{{ datadog_key }}"
+tmp_directory: "/tmp/datadog"
+compose_file_dest_path: "/tmp"
+compose_file_name: "datadog-agent.yml"
+docker_registry: 'example'
+docker_repo: 'datadog-agent'
+docker_tag: 'latest'
+stack_name: "{{ compose_file_name | splitext | first }}"
+imageVersion: 'latest'
+datadog_agent_log_level: 'critical'
+# (trace/debug/info/warn/error/critical/off)
+
+build_files:
+  - dockerd_check.yaml
+  - ntp_check.yaml
+
+pip_packages_prerequisites:
+  - wheel
+  - docker
+  - PyYAML
+
+docker_apt_prerequisites:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+
+docker_swarm_example_applications:
+  - name: Server1
+    identifier: server
+    port: 58001
+  - name: Server2
+    identifier: server
+    port: 58002
+  - name: Docker Swarm Health-Check
+    identifier: ok
+    port: 5800
+
+nginx_hosts:
+  - name: nginx
+  - name: nginx2
